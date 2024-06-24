@@ -1,52 +1,45 @@
-//Problema3
-//functie pentru puterea unui numar
-function pow(base: int, exp: nat): int {
-    if exp == 0 then 1 else base * pow(base, exp - 1)
-}
+// Problema 3
 
-//functie recursiva pentru suma elementelor 
-function SeqSum(c: seq<nat>, q: nat): nat
-  reads c // c este citit
-{
-  if |c| == 0 then 0
-  else c[0] * pow(q, |c|-1) + SeqSum(c[1..], q) 
-}
-
-//functie pentru lungimea unei secvente
-function Length(c: seq<nat>): nat
-{
-  if |c| == 0 then 0
-  else 1 + Length(c[1..])
-}
-
-
-method conversie_10_q(n: nat, q: nat) returns (c: seq<nat>)
-    requires q >= 2 && n >= 0
-    ensures n == SeqSum(c, q) 
+method conversie_10_q(n: int, q: int) returns (c: array<int>)
+    requires n >= 0 && q >= 2
+    ensures forall i :: 0 <= i < c.Length ==> 0 <= c[i] < q
 {
     var m := n;
-    c := [];
+    var k := 0;
+    var temp_c := new int[0];
+
     while m > 0
-    invariant n == m + SeqSum(c, q) * pow(q, |c|) 
-    decreases m
+        decreases m
     {
-        var cifra := m % q;
-        c := [cifra] + c; // adaugam cifra la inceputul secventei
+        var new_temp_c := new int[k + 1];
+        
+        if k > 0 {
+            for i := 0 to k - 1 {
+                new_temp_c[i] := temp_c[i];
+            }
+        }
+
+        new_temp_c[k] := m % q;
+        temp_c := new_temp_c;
         m := m / q;
+        k := k + 1;
     }
+    c := temp_c;
 }
 
-  method conversie_q_10(c: seq<nat>, q: nat) returns (n: nat)
-    requires q >= 2 && forall i :: 0 <= i < |c| ==> c[i] < q
-    ensures n == SeqSum(c, q)
+method conversie_q_10(c: array<int>, q: int) returns (result: int)
+    requires q >= 2 && forall i :: 0 <= i < c.Length ==> 0 <= c[i] < q
+    ensures result >= 0
 {
-    var i := |c| - 1;
-    n := c[i];
-    while i > 0
-        invariant n == SeqSum(c[i..], q)
-        decreases i
+    var i := c.Length - 1;
+    var temp_n := 0;
+    while i >= 0
+        invariant -1 <= i < c.Length
+        invariant temp_n >= 0
     {
+        temp_n := temp_n * q + c[i];
         i := i - 1;
-        n := n * q + c[i]; // adaugam cifra la numar
     }
+    result := temp_n;
 }
+    
